@@ -39,7 +39,7 @@ __all__ = [
     "xff_ip_selector",
 ]
 
-__version__ = "1.0.0"
+__version__ = "2.0.0"
 
 _SELECTORS: Selectors[Request] = bind_selectors(
     lambda request: RequestView(
