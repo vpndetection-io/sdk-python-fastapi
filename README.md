@@ -1,4 +1,4 @@
-# [<img src="https://s3.vpndetection.io/vpndetection-public/brand/mark.svg" alt="VPNDetection" width="24"/>](https://vpndetection.io/) VPNDetection FastAPI Middleware
+# [<img src="https://s3.vpndetection.io/vpndetection-public/brand/mark.svg" alt="VPNDetection" height="28"/>](https://vpndetection.io/) VPNDetection FastAPI Middleware
 
 [![PyPI](https://img.shields.io/pypi/v/vpndetection-fastapi.svg)](https://pypi.org/project/vpndetection-fastapi/)
 [![license](https://img.shields.io/pypi/l/vpndetection-fastapi.svg)](LICENSE)
