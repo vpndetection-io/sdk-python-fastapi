@@ -70,7 +70,7 @@ By default the middleware uses `request.client.host`, which is the socket peer u
 For an edge that writes the address into its own header, name the header:
 
 ```python
-from python_fastapi import header_ip_selector
+from vpndetection_fastapi import header_ip_selector
 
 ip_selector = header_ip_selector("CF-Connecting-IP")  # or True-Client-IP, or your own
 ```
