@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.0.7 - 2026-09-28
+
+### Fixes
+
+- Require vpndetection 5.5.1: IPv4-mapped visitors are looked up, not waved through ([`976dc44`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/976dc44ca5a65d2a13d6ce1d366a4582de24db89))
+
 ## 2.0.6 - 2026-09-27
 
 ### Features
