@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.0.9 - 2026-10-02
+
+### Fixes
+
+- Require vpndetection 5.5.3: a long Retry-After or timeout no longer raises OverflowError ([`7805671`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/78056714706cbadef865a8b1888209fae061a796))
+
 ## 2.0.8 - 2026-09-29
 
 ### Fixes
