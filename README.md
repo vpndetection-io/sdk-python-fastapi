@@ -38,6 +38,8 @@ async def index(request: Request):
     return {"vpn": found.result.is_vpn}
 ```
 
+A request your `skip` claims gets no answer, and `lookup(request)` is `None` for it.
+
 By default nothing is blocked. Every request gets an answer and your own code decides what that means — which is usually what you want, because whether a VPN visitor is a problem depends entirely on what they are doing.
 
 ## Blocking
