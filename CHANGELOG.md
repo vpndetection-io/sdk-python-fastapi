@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.0 - 2026-10-03
+
+### Features
+
+- Add block_if, a FastAPI dependency refusing one endpoint to a matching visitor ([`c91eb21`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/c91eb2118550e18ba6a5072193717c0e97f4f81c))
+
 ## 2.0.9 - 2026-10-02
 
 ### Fixes
