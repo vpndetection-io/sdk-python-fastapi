@@ -71,9 +71,9 @@ Replace the refusal with `on_blocked`.
 from fastapi import Depends
 from vpndetection_fastapi import block_if
 
+
 @app.get("/checkout", dependencies=[Depends(block_if({"is_vpn": True}))])
-async def checkout():
-    ...
+async def checkout(): ...
 ```
 
 A refused request gets an `HTTPException`, `403` with `{"detail": "access denied"}` unless you pass `status_code` and `detail`. Declared as a parameter, the dependency hands the endpoint the answer. `block_if` takes the same condition, `fail_closed` and `on_missing_field`. It judges the answer the middleware already attached, so a visitor is looked up once however many endpoints check them, and it warns once for a member your plan doesn't include. A request `skip` claimed reaches the endpoint. The middleware still has to be added: without it, the dependency raises `RuntimeError` instead of letting everyone through.
