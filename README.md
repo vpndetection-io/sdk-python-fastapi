@@ -63,6 +63,21 @@ Values are matched by equality, strings without regard to case. A list means any
 
 Replace the refusal with `on_blocked`.
 
+### Blocking one endpoint
+
+`block_condition` applies to every endpoint. In FastAPI, refuse a visitor on some endpoints only with the `block_if` dependency, on a path operation, a router or the app:
+
+```python
+from fastapi import Depends
+from vpndetection_fastapi import block_if
+
+@app.get("/checkout", dependencies=[Depends(block_if({"is_vpn": True}))])
+async def checkout():
+    ...
+```
+
+A refused request gets an `HTTPException`, `403` with `{"detail": "access denied"}` unless you pass `status_code` and `detail`. Declared as a parameter, the dependency hands the endpoint the answer. `block_if` takes the same condition, `fail_closed` and `on_missing_field`. It judges the answer the middleware already attached, so a visitor is looked up once however many endpoints check them, and it warns once for a member your plan doesn't include. A request `skip` claimed reaches the endpoint. The middleware still has to be added: without it, the dependency raises `RuntimeError` instead of letting everyone through.
+
 ## Where the client address comes from
 
 This is the setting that decides whether any of the above works, and it is the one thing only you can get right.

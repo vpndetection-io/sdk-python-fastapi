@@ -13,6 +13,7 @@ from typing import Any
 
 import httpx
 import pytest
+from fastapi import Depends, FastAPI
 from starlette.applications import Starlette
 from starlette.requests import Request
 from starlette.responses import JSONResponse
@@ -22,6 +23,7 @@ from vpndetection import AsyncVPNDetection
 
 from vpndetection_fastapi import (
     VPNDetectionMiddleware,
+    block_if,
     header_ip_selector,
     lookup,
     xff_ip_selector,
@@ -238,6 +240,120 @@ def test_corpus_conditions(case: dict[str, Any]) -> None:
             on_warn=warnings.append,
         )
     )
+    assert status == (403 if case["expect"]["blocked"] else 200), case["why"]
+    reported = [w for w in warnings if "does not include" in w]
+    assert len(reported) == (1 if case["expect"]["missing"] else 0), case["why"]
+    for member in case["expect"]["missing"]:
+        assert member in reported[0], case["why"]
+
+
+def fastapi_with(guard: dict[str, Any] | None = None, **options: Any) -> FastAPI:
+    """A FastAPI app with the middleware, whose ``/guarded`` depends on
+    ``block_if(**guard)`` and ``/`` on nothing."""
+    app = FastAPI()
+    # A default rather than Annotated: under postponed annotations FastAPI resolves an
+    # annotation in module globals, where this per-app dependency does not live.
+    check = block_if(**(guard or {"condition": {"is_vpn": True}}))
+    app.add_api_route("/", index)
+
+    @app.get("/guarded")
+    async def guarded(found: Any = Depends(check)) -> dict[str, Any]:  # noqa: B008
+        return {"attached": found is not None, "ip": found.ip if found else None}
+
+    app.add_middleware(VPNDetectionMiddleware, **options)
+    return app
+
+
+def fetch(app: Any, url: str) -> tuple[int, dict[str, Any]]:
+    with TestClient(app, client=("127.0.0.1", 12345)) as client:
+        response = client.get(url)
+    return response.status_code, response.json()
+
+
+def test_block_if_refuses_only_the_endpoint_that_depends_on_it() -> None:
+    vpn = serving({"is_vpn": True, "vpn": {"provider": "nordvpn"}})
+    app = fastapi_with(client=vpn, ip_selector=fixed_ip)
+    status, body = fetch(app, "/guarded")
+    assert status == 403
+    assert body == {"detail": "access denied"}
+    status, body = fetch(app, "/")
+    assert status == 200, "the middleware itself has no condition, so other endpoints are open"
+    assert body["is_vpn"] is True
+    assert vpn.asked == [PUBLIC_IP, PUBLIC_IP], "one lookup per request, none by the dependency"
+
+    clean = serving({"is_vpn": False, "vpn": {}})
+    status, body = fetch(fastapi_with(client=clean, ip_selector=fixed_ip), "/guarded")
+    assert status == 200
+    assert body == {"attached": True, "ip": PUBLIC_IP}, "the dependency hands over the answer"
+
+
+def test_block_if_takes_its_status_and_detail() -> None:
+    vpn = serving({"is_vpn": True, "vpn": {"provider": "nordvpn"}})
+    guard = {"condition": {"is_vpn": True}, "status_code": 451, "detail": "not from a VPN"}
+    status, body = fetch(fastapi_with(guard, client=vpn, ip_selector=fixed_ip), "/guarded")
+    assert status == 451
+    assert body == {"detail": "not from a VPN"}
+
+
+def test_block_if_lets_a_skipped_request_through() -> None:
+    vpn = serving({"is_vpn": True})
+    app = fastapi_with(client=vpn, ip_selector=fixed_ip, skip=lambda request: True)
+    status, body = fetch(app, "/guarded")
+    assert status == 200
+    assert body == {"attached": False, "ip": None}
+    assert vpn.asked == []
+
+
+def test_block_if_fails_open_unless_told_to_fail_closed() -> None:
+    failing = serving({"error": "boom"}, status=500)
+    status, _ = fetch(fastapi_with(client=failing, ip_selector=fixed_ip), "/guarded")
+    assert status == 200
+
+    guard = {"condition": {"is_vpn": True}, "fail_closed": True}
+    status, body = fetch(fastapi_with(guard, client=failing, ip_selector=fixed_ip), "/guarded")
+    assert status == 403
+    assert body == {"detail": "access denied"}
+
+
+def test_block_if_without_the_middleware_is_an_error() -> None:
+    app = FastAPI()
+    check = block_if({"is_vpn": True})
+
+    @app.get("/guarded")
+    async def guarded(found: Any = Depends(check)) -> None:  # noqa: B008
+        return None
+
+    with pytest.raises(RuntimeError, match="add VPNDetectionMiddleware"):
+        fetch(app, "/guarded")
+
+
+def test_block_if_refuses_a_condition_that_constrains_nothing() -> None:
+    with pytest.raises(ValueError, match="constrains nothing"):
+        block_if({"is_vpn": False})
+
+
+def test_block_if_warns_once() -> None:
+    free = serving({"is_vpn": True})
+    warnings: list[str] = []
+    guard = {"condition": {"is_hosting": True}, "on_warn": warnings.append}
+    app = fastapi_with(guard, client=free, ip_selector=fixed_ip)
+    fetch(app, "/guarded")
+    fetch(app, "/guarded")
+    assert len(warnings) == 1
+    assert warnings[0].startswith("block_if names is_hosting")
+
+
+@pytest.mark.parametrize("case", MIDDLEWARE["conditions"], ids=lambda c: c["name"])
+def test_corpus_conditions_through_block_if(case: dict[str, Any]) -> None:
+    ip = case.get("bogon") or case["body"]["ip"]
+    client = serving({k: v for k, v in (case.get("body") or {}).items() if k != "ip"})
+    warnings: list[str] = []
+    app = fastapi_with(
+        {"condition": case["condition"], "on_warn": warnings.append},
+        client=client,
+        ip_selector=lambda _request, ip=ip: ip,
+    )
+    status, _ = fetch(app, "/guarded")
     assert status == (403 if case["expect"]["blocked"] else 200), case["why"]
     reported = [w for w in warnings if "does not include" in w]
     assert len(reported) == (1 if case["expect"]["missing"] else 0), case["why"]

@@ -1,7 +1,8 @@
 """Official FastAPI and Starlette middleware for the VPNDetection API.
 
 Classifies the visitor behind each request and hangs the answer off
-``request.state.vpndetection``, where your endpoints can read it. Blocking is opt-in.
+``request.state.vpndetection``, where your endpoints can read it. Blocking is opt-in, for
+every endpoint or, in FastAPI, for one with the :func:`block_if` dependency.
 
     from fastapi import FastAPI
     from vpndetection_fastapi import VPNDetectionMiddleware
@@ -18,13 +19,17 @@ from __future__ import annotations
 from collections.abc import Awaitable, Callable
 from typing import Any
 
+from starlette.exceptions import HTTPException
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.types import ASGIApp, Receive, Scope, Send
 from vpndetection.middleware import (
     AsyncCore,
+    Conditions,
+    Guard,
     IpSelector,
     Lookup,
+    MissingFieldAction,
     Options,
     RequestView,
     Selectors,
@@ -33,6 +38,7 @@ from vpndetection.middleware import (
 
 __all__ = [
     "VPNDetectionMiddleware",
+    "block_if",
     "default_ip_selector",
     "header_ip_selector",
     "lookup",
@@ -40,6 +46,10 @@ __all__ = [
 ]
 
 __version__ = "2.0.9"
+
+# Set on a request ``skip`` claimed, so block_if can tell it from one the middleware
+# never saw.
+_SKIPPED = "_vpndetection_skipped"
 
 _SELECTORS: Selectors[Request] = bind_selectors(
     lambda request: RequestView(
@@ -79,6 +89,59 @@ def lookup(request: Request) -> Lookup | None:
     return getattr(request.state, "vpndetection", None)
 
 
+def block_if(
+    condition: Conditions,
+    *,
+    status_code: int = 403,
+    detail: Any = "access denied",
+    fail_closed: bool = False,
+    on_missing_field: MissingFieldAction = "warn",
+    on_warn: Callable[[str], None] | None = None,
+) -> Callable[[Request], Awaitable[Lookup | None]]:
+    """A FastAPI dependency refusing one endpoint to a visitor matching ``condition``.
+
+    The middleware's ``block_condition`` refuses on every endpoint; this refuses on the
+    path operations, routers or apps that depend on it, with an ``HTTPException`` of
+    ``status_code`` and ``detail``::
+
+        @app.get("/checkout", dependencies=[Depends(block_if({"is_vpn": True}))])
+        async def checkout(): ...
+
+    As a parameter it hands the endpoint the answer, or None for a request ``skip``
+    claimed. It judges the answer the middleware already attached, so the visitor is not
+    looked up again, and a member your plan does not serve is reported once, as the
+    middleware's own condition reports it. A condition that constrains nothing is
+    refused when the dependency is built.
+
+    A request ``skip`` claimed carries no answer and reaches the endpoint, and so does
+    one whose lookup failed unless you set ``fail_closed``. A request the middleware
+    never saw raises ``RuntimeError``: a check that silently never ran would be worse
+    than none.
+    """
+    guard = Guard(
+        condition,
+        fail_closed=fail_closed,
+        on_missing_field=on_missing_field,
+        on_warn=on_warn,
+        name="block_if",
+    )
+
+    async def dependency(request: Request) -> Lookup | None:
+        found = lookup(request)
+        if found is None:
+            if getattr(request.state, _SKIPPED, False):
+                return None
+            raise RuntimeError(
+                "vpndetection: block_if found no answer on this request; add "
+                "VPNDetectionMiddleware to the app"
+            )
+        if guard.blocks(found):
+            raise HTTPException(status_code=status_code, detail=detail)
+        return found
+
+    return dependency
+
+
 class VPNDetectionMiddleware:
     """Classify the visitor, and optionally refuse the request.
 
@@ -107,6 +170,7 @@ class VPNDetectionMiddleware:
         request = Request(scope, receive=receive)
         found = await self._core.evaluate(request)
         if found is None:
+            setattr(request.state, _SKIPPED, True)
             await self.app(scope, receive, send)
             return
         # request.state is backed by scope["state"], so this reaches the Request the
