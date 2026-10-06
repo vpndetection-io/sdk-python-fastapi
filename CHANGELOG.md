@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.2 - 2026-10-06
+
+### Features
+
+- Require vpndetection 5.7.0: the authorization code sign-in ([`982b9a6`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/982b9a6908973744a6eef5fdbf6171d5541422b8))
+
 ## 2.1.1 - 2026-10-04
 
 ### Fixes
