@@ -82,7 +82,7 @@ A refused request gets an `HTTPException`, `403` with `{"detail": "access denied
 
 This is the setting that decides whether any of the above works, and it is the one thing only you can get right.
 
-By default the middleware uses `request.client.host`, which is the socket peer unless the server was started with proxy-header support. Behind a load balancer without it, every visitor looks like the load balancer — a datacenter address, so a hosting rule would block all of them. Starting uvicorn with `--proxy-headers --forwarded-allow-ips=<your proxy>` is the server's own answer, and the one that knows your topology.
+By default the middleware uses `request.client.host`. uvicorn, and `fastapi run` with it, reads proxy headers by default, but only from a peer that `--forwarded-allow-ips` trusts, and that defaults to `127.0.0.1,::1` (or `$FORWARDED_ALLOW_IPS`). So behind a proxy on the same machine, the visitor's address arrives with no setup. Behind one anywhere else, such as nginx in its own container or a load balancer in a VPC, every visitor looks like the proxy. That address is usually a private one, which the middleware answers locally: nobody is flagged, nothing is blocked, and the private-address warning below is the only sign. Name your proxy, by its address or its subnet: `--forwarded-allow-ips=172.28.5.0/28`. gunicorn's own `--forwarded-allow-ips` works the same way. Never pass `*`. It trusts every peer, so the left-most `X-Forwarded-For` entry wins, and that is whatever the visitor sent: someone on a VPN who sends `X-Forwarded-For: 1.1.1.1` is looked up as `1.1.1.1`.
 
 For an edge that writes the address into its own header, name the header:
 

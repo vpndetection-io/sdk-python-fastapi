@@ -58,13 +58,14 @@ _SELECTORS: Selectors[Request] = bind_selectors(
     )
 )
 
-#: ``request.client.host``, which is the socket peer unless the app was started with
-#: uvicorn's ``--proxy-headers``.
+#: ``request.client.host``. uvicorn reads proxy headers into it by default, but only
+#: from a peer ``--forwarded-allow-ips`` trusts, which defaults to ``127.0.0.1,::1``.
 #:
-#: Behind a load balancer without it, every visitor looks like the load balancer - a
-#: datacenter address a hosting rule would block them all for. If you are behind one,
-#: pass ``--proxy-headers --forwarded-allow-ips=<your proxy>`` (the server's own answer,
-#: and the one that knows your topology) or use :func:`header_ip_selector`.
+#: Behind a proxy anywhere else, every visitor looks like the proxy, usually a private
+#: address that is answered locally, so nobody is flagged and the private-address
+#: warning is the only sign. Pass ``--forwarded-allow-ips=<your proxy's address or
+#: subnet>``, never ``*``, which takes the left-most ``X-Forwarded-For`` entry a visitor
+#: can forge, or use :func:`header_ip_selector`.
 default_ip_selector: IpSelector[Request] = _SELECTORS.default
 
 #: An address from ``X-Forwarded-For``.
