@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.8 - 2026-10-19
+
+### Fixes
+
+- Require vpndetection 5.10.0: num_ports and num_proxies in the pubproxy detail ([`c5fa5cb`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/c5fa5cb80237225ebb3d7aee077094549fbf9451))
+
 ## 2.1.7 - 2026-10-18
 
 ### Fixes
