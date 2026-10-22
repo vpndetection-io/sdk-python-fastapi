@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.10 - 2026-10-22
+
+### Fixes
+
+- Require vpndetection 5.11.1: a wrong-typed member is a server_error ([`e36e37e`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/e36e37e1a469440872d2d01768dc0359242740c1))
+
 ## 2.1.9 - 2026-10-20
 
 ### Features
