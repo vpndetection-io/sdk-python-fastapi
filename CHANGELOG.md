@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.11 - 2026-10-23
+
+### Fixes
+
+- Require vpndetection 5.12.0, which adds oauth.register ([`a63aa00`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/a63aa0036f8874e770d4be65c63500f7f1436919))
+
 ## 2.1.10 - 2026-10-22
 
 ### Fixes
