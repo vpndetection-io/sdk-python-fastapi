@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.14 - 2026-10-28
+
+### Fixes
+
+- Require vpndetection 5.12.3: a date-time whose T or Z is lowercase is read ([`c262d4b`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/c262d4b600d3878b89feacb2893c9d9180f7cdee))
+
 ## 2.1.13 - 2026-10-26
 
 ### Fixes
