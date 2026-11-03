@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/vpndetection-fastapi.svg)](https://pypi.org/project/vpndetection-fastapi/)
 [![license](https://img.shields.io/pypi/l/vpndetection-fastapi.svg)](LICENSE)
 
-The official FastAPI Middleware for the [VPNDetection](https://vpndetection.io) API.
+The official FastAPI middleware for the [VPNDetection](https://vpndetection.io) API.
 
 It classifies the visitor behind each request — VPN, residential proxy, Tor, hosting, CDN, relay — and hands the answer to your code. Blocking is opt-in.
 
