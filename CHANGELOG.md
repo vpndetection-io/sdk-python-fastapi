@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.16 - 2026-11-07
+
+### Features
+
+- Require vpndetection 5.13.0: downloads take the build a webhook names ([`0a2600a`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/0a2600a7da8d15b512d890ce5c070fcbffc1f01f))
+
 ## 2.1.15 - 2026-11-06
 
 ### Fixes
