@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.21 - 2026-11-11
+
+### Features
+
+- Require vpndetection 5.15.0: trial_expired on a trial key's answers ([`24fa4aa`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/24fa4aaa83e87cbf43203aaf71d9686e7ba2c9f2))
+
 ## 2.1.20 - 2026-11-11
 
 ### Fixes
