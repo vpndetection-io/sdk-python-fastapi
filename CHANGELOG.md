@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.18 - 2026-11-11
+
+### Features
+
+- Require vpndetection 5.14.0: a lookup without a key answers more ([`3161128`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/3161128e6758efdb9ba3ccc546b8f328db8c73a3))
+
 ## 2.1.17 - 2026-11-11
 
 ### Fixes
