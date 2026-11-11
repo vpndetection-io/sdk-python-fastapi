@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.17 - 2026-11-11
+
+### Fixes
+
+- Require vpndetection 5.13.1: a client concurrency is checked where it is set ([`9fe9b92`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/9fe9b924446f4c8fdd4358a0f78b754d00b56ef0))
+
 ## 2.1.16 - 2026-11-07
 
 ### Features
