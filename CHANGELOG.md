@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.23 - 2026-11-11
+
+### Fixes
+
+- Require vpndetection 5.15.2: Unlimited, the free plan, never the Unlimited tier ([`d1e07ae`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/d1e07ae3d77f129bfa36cfee5eaa8edff1ffc83a))
+
 ## 2.1.22 - 2026-11-11
 
 ### Fixes
