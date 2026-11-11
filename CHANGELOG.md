@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.19 - 2026-11-11
+
+### Fixes
+
+- Require vpndetection 5.14.1: plainer words on lookups without a key ([`f7ca8d9`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/f7ca8d936a040cff06b2f11f0d424f64b6cef606))
+
 ## 2.1.18 - 2026-11-11
 
 ### Features
