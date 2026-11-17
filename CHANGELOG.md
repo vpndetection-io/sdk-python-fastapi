@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.25 - 2026-11-17
+
+### Fixes
+
+- Require vpndetection 5.17.0: a vocabulary value it was not built with comes back as served, and the plan's name ([`2ff2529`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/2ff25290b808f244558e63abb21367f0320d6a56))
+
 ## 2.1.24 - 2026-11-14
 
 ### Fixes
