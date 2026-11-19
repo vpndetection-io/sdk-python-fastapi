@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.27 - 2026-11-19
+
+### Fixes
+
+- Require vpndetection 5.18.1: re-pinned to spec 2026.11.18 ([`08cf64c`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/08cf64c199c9c5a6cb2438e77b562580f371e084))
+
 ## 2.1.26 - 2026-11-18
 
 ### Fixes
