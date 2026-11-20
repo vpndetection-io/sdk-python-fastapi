@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.1.28 - 2026-11-20
+
+### Features
+
+- Require vpndetection 5.19.0: the network, service, company and abuse members ([`66c0b08`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/66c0b080a273e783c306e546c3bca48f31532123))
+
 ## 2.1.27 - 2026-11-19
 
 ### Fixes
