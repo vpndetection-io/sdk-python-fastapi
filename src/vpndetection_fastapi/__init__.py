@@ -147,6 +147,8 @@ class VPNDetectionMiddleware:
     """Classify the visitor, and optionally refuse the request.
 
     Takes everything :class:`vpndetection.middleware.Options` does, plus ``on_blocked``.
+    ``allow_bots=True`` sends the request's own ``User-Agent`` with its lookup and never
+    refuses a crawler the answer verifies, here or in :func:`block_if`.
 
     Written as raw ASGI rather than on ``BaseHTTPMiddleware``, which wraps the response
     in a streaming bridge that breaks background tasks and server-sent events - a cost
@@ -162,7 +164,9 @@ class VPNDetectionMiddleware:
     ) -> None:
         self.app = app
         self._on_blocked = on_blocked or _refuse
-        self._core: AsyncCore[Request] = AsyncCore(Options(**options), default_ip_selector)
+        self._core: AsyncCore[Request] = AsyncCore(
+            Options(**options), default_ip_selector, _user_agent
+        )
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
         if scope["type"] != "http":
@@ -186,6 +190,10 @@ class VPNDetectionMiddleware:
                 await (await response)(scope, receive, send)
             return
         await self.app(scope, receive, send)
+
+
+def _user_agent(request: Request) -> str | None:
+    return request.headers.get("User-Agent")
 
 
 def _refuse(_request: Request, _lookup: Lookup) -> Response:

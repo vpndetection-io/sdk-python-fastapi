@@ -419,3 +419,119 @@ def test_the_readme_middleware_sends_its_key_for_a_public_peer(
     assert body["error"] is None and body["is_vpn"] is True
     assert len(sent) == 1 and sent[0][0].endswith(PUBLIC_IP)
     assert sent[0][1] == "Bearer a-key"
+
+
+GOOGLEBOT = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)"
+
+
+def api_answering(
+    monkeypatch: pytest.MonkeyPatch, verdicts: dict[str, str] | None
+) -> list[str | None]:
+    """The API's host, answering every lookup as a match for ``{"is_hosting": True}`` and,
+    for a sent agent, with the verdict ``verdicts`` holds for it (None: no verdict, as
+    Unlimited answers). Returns the ``user_agent`` each lookup sent."""
+    sent: list[str | None] = []
+
+    async def handle(
+        _transport: httpx.AsyncHTTPTransport, request: httpx.Request
+    ) -> httpx.Response:
+        if request.url.host != "api.vpndetection.io":
+            raise httpx.ConnectError("only the API's host answers here", request=request)
+        agent = request.url.params.get("user_agent")
+        sent.append(agent)
+        body: dict[str, Any] = {
+            "ip": request.url.path.lstrip("/"),
+            "is_vpn": False,
+            "is_hosting": True,
+        }
+        if agent and verdicts is not None:
+            verdict = verdicts.get(agent, "not_bot")
+            body["user_agent"] = {"agent": "Googlebot", "kind": "bot", "verdict": verdict}
+        return httpx.Response(200, json=body)
+
+    monkeypatch.setattr(httpx.AsyncHTTPTransport, "handle_async_request", handle)
+    monkeypatch.setenv("VPNDETECTION_API_KEY", "a-key")
+    return sent
+
+
+def visit(app: Any, *requests: tuple[str | None, str, str]) -> list[int]:
+    """Each (User-Agent, path, peer) through one app, answering each status."""
+    statuses: list[int] = []
+    for user_agent, url, peer in requests:
+        with TestClient(app, client=(peer, 12345)) as client:
+            # The test client sends a User-Agent of its own unless told otherwise.
+            client.headers.pop("User-Agent", None)
+            headers = {} if user_agent is None else {"User-Agent": user_agent}
+            statuses.append(client.get(url, headers=headers).status_code)
+    return statuses
+
+
+def readme_app(**options: Any) -> FastAPI:
+    """The README's build, plus ``options``, with ``/guarded`` depending on
+    ``block_if({"is_hosting": True})``."""
+    return fastapi_with(
+        {"condition": {"is_hosting": True}},
+        api_key=os.environ["VPNDETECTION_API_KEY"],
+        **options,
+    )
+
+
+def test_allow_bots_sends_the_requests_own_user_agent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    sent = api_answering(monkeypatch, {GOOGLEBOT: "verified"})
+
+    visit(
+        readme_app(allow_bots=True),
+        (GOOGLEBOT, "/", PUBLIC_IP),
+        ("", "/", "45.83.91.2"),
+        (None, "/", "45.83.91.3"),
+    )
+
+    assert sent == [GOOGLEBOT, None, None], "an empty or absent header sent an agent"
+
+
+def test_without_allow_bots_no_user_agent_is_sent(monkeypatch: pytest.MonkeyPatch) -> None:
+    sent = api_answering(monkeypatch, {GOOGLEBOT: "verified"})
+
+    statuses = visit(
+        readme_app(block_condition={"is_hosting": True}), (GOOGLEBOT, "/", PUBLIC_IP)
+    )
+
+    assert sent == [None]
+    assert statuses == [403]
+
+
+@pytest.mark.parametrize(
+    ("verdict", "status"), [("verified", 200), ("spoofed", 403), ("not_bot", 403)]
+)
+@pytest.mark.parametrize("url", ["/", "/guarded"])
+def test_a_verified_crawler_passes_a_condition_it_meets_and_no_other_does(
+    monkeypatch: pytest.MonkeyPatch, url: str, verdict: str, status: int
+) -> None:
+    api_answering(monkeypatch, {GOOGLEBOT: verdict})
+    options: dict[str, Any] = {"allow_bots": True}
+    if url == "/":
+        options["block_condition"] = {"is_hosting": True}
+
+    assert visit(readme_app(**options), (GOOGLEBOT, url, PUBLIC_IP)) == [status]
+
+
+def test_a_condition_naming_the_verdict_refuses_a_forged_crawler(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    api_answering(monkeypatch, {GOOGLEBOT: "spoofed"})
+    app = readme_app(allow_bots=True, block_condition={"user_agent": {"verdict": "spoofed"}})
+
+    assert visit(app, (GOOGLEBOT, "/", PUBLIC_IP)) == [403]
+
+
+def test_an_answer_without_a_verdict_warns_once(monkeypatch: pytest.MonkeyPatch) -> None:
+    sent = api_answering(monkeypatch, None)
+    warnings: list[str] = []
+    app = readme_app(allow_bots=True, on_warn=warnings.append)
+
+    visit(app, (GOOGLEBOT, "/", PUBLIC_IP), (GOOGLEBOT, "/", "45.83.91.2"))
+
+    assert sent == [GOOGLEBOT, GOOGLEBOT]
+    assert len([w for w in warnings if "user_agent verdict" in w]) == 1, warnings
