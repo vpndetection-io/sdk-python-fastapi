@@ -2,6 +2,13 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.2.0 - 2026-11-23
+
+### Features
+
+- Require vpndetection 5.21.0: a user agent with a lookup, and allow_bots in the middleware core ([`a7e8d80`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/a7e8d80b886c987c7358a028499ff2697fe8c58c))
+- Let a verified crawler through with allow_bots ([`c7dd247`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/c7dd247cb47bd55acd35cadca44b5d6e4c131265))
+
 ## 2.1.29 - 2026-11-22
 
 ### Features
