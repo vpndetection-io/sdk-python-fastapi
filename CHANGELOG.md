@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.2.1 - 2026-11-24
+
+### Fixes
+
+- Require vpndetection 5.21.1: a detail's first_seen or last_seen that is not a day is refused ([`e6d0d01`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/e6d0d0119c78c510d7b912223c1b0ed13438e6d5))
+
 ## 2.2.0 - 2026-11-23
 
 ### Features
