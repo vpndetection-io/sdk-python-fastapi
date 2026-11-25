@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.2.3 - 2026-11-25
+
+### Fixes
+
+- Require vpndetection 5.22.1: doc comments name a paid plan, the entitlement example the Data plan ([`44915d4`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/44915d411f41db3af686d89cf59e2d31defbd6f1))
+
 ## 2.2.2 - 2026-11-24
 
 ### Fixes
