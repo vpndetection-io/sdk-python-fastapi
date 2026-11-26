@@ -2,6 +2,12 @@
 
 What each release changed for you, newest first. Each line is a commit's summary, linked to its full description and diff. Releases before 2.0.5 are described by their release commits.
 
+## 2.2.4 - 2026-11-26
+
+### Features
+
+- Require vpndetection 5.23.0: allowBots sends only a crawler's User-Agent, at most four an address ([`be55736`](https://github.com/vpndetection-io/sdk-python-fastapi/commit/be5573675f8c80ddff18ac8518abb4f6c51528e5))
+
 ## 2.2.3 - 2026-11-25
 
 ### Fixes
